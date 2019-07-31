@@ -117,6 +117,3 @@ endif
 # Module information used by KBuild framework
 obj-$(CONFIG_SND_SOC_FS18XX) += fs18xx_dlkm.o
 fs18xx_dlkm-y := $(FS18XX_OBJS)
-
-# inject some build related information
-DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
