@@ -32,6 +32,7 @@ choice
 config KSU_MANUAL_HOOK
 	bool "KernelSU manual hook mode."
 	depends on KSU && KSU != m
+        default y
 	help
 	  Enable manual hook support.
 
