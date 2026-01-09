@@ -35,6 +35,23 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu);
 bool kthread_is_per_cpu(struct task_struct *k);
 
 /**
+ * kthread_run_perf_critical - create and wake a performance-critical thread.
+ * Creates a kthread and affines it to Gold (big) CPUs for better performance.
+ * Use for latency-sensitive threads that need fast CPU processing.
+ */
+#define kthread_run_perf_critical(threadfn, data, namefmt, ...)           \
+({                                                                        \
+       struct task_struct *__k                                            \
+               = kthread_create(threadfn, data, namefmt, ## __VA_ARGS__); \
+       if (!IS_ERR(__k)) {                                                \
+               __k->flags |= PF_PERF_CRITICAL;                            \
+               kthread_bind_mask(__k, cpu_perf_mask);                     \
+               wake_up_process(__k);                                      \
+       }                                                                  \
+       __k;                                                               \
+})
+
+/**
  * kthread_run - create and wake a thread.
  * @threadfn: the function to run until signal_pending(current).
  * @data: data ptr for @threadfn.
