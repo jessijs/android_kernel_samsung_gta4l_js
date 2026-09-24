@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build Kernel
-    runs-on: ubuntu-20.04 # Revertido para o Ubuntu 20.04 para evitar conflito com o Proton Clang
+    runs-on: ubuntu-latest # Usando a máquina mais moderna (24.04/22.04)
 
     steps:
     - name: Checkout Kernel Source
@@ -15,38 +15,23 @@ jobs:
     - name: Setup Build Environment
       run: |
         sudo apt-get update
-        # Adicionados pacotes cross-compiler gcc-aarch64 e gcc-arm
         sudo apt-get install -y build-essential bc zip curl git wget python3 gcc clang libssl-dev cpio gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
-    - name: Download Proton Clang
+    - name: Download Azure Clang (Toolchain)
       run: |
-        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git ~/proton-clang
+        # O script do dev procura o toolchain em ~/tc/bin.
+        # Vamos clonar o Azure Clang (moderno e estável) diretamente para lá.
+        git clone --depth=1 https://gitlab.com/Panda-OS/azure-clang.git ~/tc
 
-    - name: Build Kernel
+    - name: Run Developer build.sh
       run: |
-        export PATH="$HOME/proton-clang/bin:$PATH"
-        export ARCH=arm64
-        export SUBARCH=arm64
-        export CROSS_COMPILE=aarch64-linux-gnu-
-        export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-        
-        # Gera o arquivo de configuração para o T500 (Wi-Fi)
-        make O=out gta4vwifi_defconfig
-        
-        # Inicia a compilação
-        make -j$(nproc --all) O=out \
-          CC=clang \
-          AR=llvm-ar \
-          NM=llvm-nm \
-          OBJCOPY=llvm-objcopy \
-          OBJDUMP=llvm-objdump \
-          STRIP=llvm-strip
+        # O build.sh assume que a pasta do toolchain é ~/tc/bin, que acabamos de criar.
+        chmod +x build.sh
+        bash build.sh
           
     - name: Upload Kernel Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Bloodreaper-Kernel-SM-T500
-        path: |
-          out/arch/arm64/boot/Image.gz
-          out/arch/arm64/boot/Image.gz-dtb
-          out/arch/arm64/boot/dtbo.img
+        name: Bloodreaper-AnyKernel3-ZIP
+        # O build.sh gera um arquivo ZIP na raiz do projeto começando com "Kernel_BloodReaper_gta4l_"
+        path: "*.zip"
