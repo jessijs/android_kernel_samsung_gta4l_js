@@ -1,0 +1,51 @@
+name: Build Bloodreaper Kernel
+
+on:
+  workflow_dispatch: # Permite rodar o script manualmente clicando em um botão
+
+jobs:
+  build:
+    name: Build Kernel
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v4
+
+    - name: Setup Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential bc zip curl git wget python3 gcc clang libssl-dev cpio
+
+    - name: Download Proton Clang
+      run: |
+        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git ~/proton-clang
+
+    - name: Build Kernel
+      run: |
+        export PATH="$HOME/proton-clang/bin:$PATH"
+        export ARCH=arm64
+        export SUBARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+        
+        # Gera o arquivo de configuração para o T500 (Wi-Fi)
+        make O=out gta4vwifi_defconfig
+        
+        # Inicia a compilação usando todos os núcleos do servidor
+        make -j$(nproc --all) O=out \
+          CC=clang \
+          AR=llvm-ar \
+          NM=llvm-nm \
+          OBJCOPY=llvm-objcopy \
+          OBJDUMP=llvm-objdump \
+          STRIP=llvm-strip
+          
+    - name: Upload Kernel Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Bloodreaper-Kernel-SM-T500
+        path: |
+          out/arch/arm64/boot/Image.gz
+          out/arch/arm64/boot/Image.gz-dtb
+          out/arch/arm64/boot/dtbo.img
