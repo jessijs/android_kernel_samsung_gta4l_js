@@ -1,12 +1,12 @@
 name: Build Bloodreaper Kernel
 
 on:
-  workflow_dispatch: # Permite rodar o script manualmente clicando em um botão
+  workflow_dispatch:
 
 jobs:
   build:
     name: Build Kernel
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # Revertido para o Ubuntu 20.04 para evitar conflito com o Proton Clang
 
     steps:
     - name: Checkout Kernel Source
@@ -15,7 +15,8 @@ jobs:
     - name: Setup Build Environment
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential bc zip curl git wget python3 gcc clang libssl-dev cpio
+        # Adicionados pacotes cross-compiler gcc-aarch64 e gcc-arm
+        sudo apt-get install -y build-essential bc zip curl git wget python3 gcc clang libssl-dev cpio gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
     - name: Download Proton Clang
       run: |
@@ -32,7 +33,7 @@ jobs:
         # Gera o arquivo de configuração para o T500 (Wi-Fi)
         make O=out gta4vwifi_defconfig
         
-        # Inicia a compilação usando todos os núcleos do servidor
+        # Inicia a compilação
         make -j$(nproc --all) O=out \
           CC=clang \
           AR=llvm-ar \
