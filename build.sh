@@ -22,8 +22,8 @@ echo "[clang --version]:"
 clang --version
 
 # Export variables
-export KBUILD_BUILD_USER="aryan"
-export KBUILD_BUILD_HOST="curiousnom"
+export KBUILD_BUILD_USER="jessijs"
+export KBUILD_BUILD_HOST="bloodreaper"
 export KBUILD_LAST_COMMIT=${GIT_COMMIT_ID}
 
 echo "Cleaning..."
@@ -41,8 +41,20 @@ fi
     # ------------- Building for gta4l ---------------
     echo "Clearing [out/] and building for gta4l....."
 
+    # 1. Configura as opções do kernel
     make $MAKE_ARGS gta4l_defconfig
 
+    # --- FORÇANDO O SPOOF GKI 6.12.38 PARA ANDROID 15/16/17 ---
+    # Roda uma compilação inicial rápida só para gerar os cabeçalhos
+    make $MAKE_ARGS init/ -j$(nproc --all) 2>/dev/null || true
+    
+    # Injeta a versão GKI de Android 16 diretamente no arquivo temporário
+    echo "Injetando a versão GKI spoof 6.12.38 no UTS_RELEASE..."
+    mkdir -p out/include/generated
+    echo '#define UTS_RELEASE "6.12.38-🩸LK_LittleKernel+"' > out/include/generated/utsrelease.h
+    # --------------------------------------------------------
+
+    # 2. Continua a compilação pesada
     make $MAKE_ARGS -j$(nproc --all) 2> >(tee -a error.log >&2)
 
     if [ -f "out/arch/arm64/boot/Image" ]; then
@@ -64,7 +76,13 @@ fi
     # -----------------------------------------------------------------------------------
 
     cd anykernel
-    ZIP_FILENAME=Kernel_BloodReaper_gta4l_$(date +'%Y%m%d_%H%M%S')_${GIT_COMMIT_ID}.zip
+
+    # --- NOVO: Personalizando o nome no AnyKernel ---
+    echo "Personalizando o nome do Kernel..."
+    sed -i 's/kernel.string=.*/kernel.string=🩸 LK_LittleKernel (Permissive) for SM-T500 by jessijs/g' anykernel.sh
+    # ------------------------------------------------
+
+    ZIP_FILENAME=LK_LittleKernel_Permissive_gta4l_$(date +'%Y%m%d_%H%M%S')_${GIT_COMMIT_ID}.zip
     zip -r9 $ZIP_FILENAME ./* -x .git .gitignore out/ ./*.zip
     mv $ZIP_FILENAME ../
     cd ..
