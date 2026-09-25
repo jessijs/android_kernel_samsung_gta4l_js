@@ -55,6 +55,14 @@ fi
     rm -rf anykernel/kernels/
     mkdir -p anykernel/kernels/
 
+    # --- CORREÇÃO: Copiando os arquivos vitais do kernel para a pasta do AnyKernel ---
+    echo "Copying compiled kernel to AnyKernel3 directory..."
+    cp out/arch/arm64/boot/Image anykernel/ 2>/dev/null || true
+    cp out/arch/arm64/boot/Image.gz anykernel/ 2>/dev/null || true
+    cp out/arch/arm64/boot/Image.gz-dtb anykernel/ 2>/dev/null || true
+    cp out/arch/arm64/boot/dtbo.img anykernel/ 2>/dev/null || true
+    # -----------------------------------------------------------------------------------
+
     cd anykernel
     ZIP_FILENAME=Kernel_BloodReaper_gta4l_$(date +'%Y%m%d_%H%M%S')_${GIT_COMMIT_ID}.zip
     zip -r9 $ZIP_FILENAME ./* -x .git .gitignore out/ ./*.zip
