@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build Kernel
-    runs-on: ubuntu-latest # Usando a máquina mais moderna (24.04/22.04)
+    runs-on: ubuntu-22.04 # Fixado no 22.04 para garantir compatibilidade máxima com o script do dev
 
     steps:
     - name: Checkout Kernel Source
@@ -17,15 +17,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential bc zip curl git wget python3 gcc clang libssl-dev cpio gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
-    - name: Download Azure Clang (Toolchain)
+    - name: Download Proton Clang (Toolchain)
       run: |
         # O script do dev procura o toolchain em ~/tc/bin.
-        # Vamos clonar o Azure Clang (moderno e estável) diretamente para lá.
-        git clone --depth=1 https://gitlab.com/Panda-OS/azure-clang.git ~/tc
+        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git ~/tc
 
     - name: Run Developer build.sh
       run: |
-        # O build.sh assume que a pasta do toolchain é ~/tc/bin, que acabamos de criar.
         chmod +x build.sh
         bash build.sh
           
@@ -33,5 +31,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Bloodreaper-AnyKernel3-ZIP
-        # O build.sh gera um arquivo ZIP na raiz do projeto começando com "Kernel_BloodReaper_gta4l_"
         path: "*.zip"
