@@ -44,14 +44,11 @@ fi
     # 1. Configura as opções do kernel
     make $MAKE_ARGS gta4l_defconfig
 
-    # --- ROTA 3: BUSCA E DESTRUIÇÃO (O SPOOF DEFINITIVO) ---
-    echo "Aplicando injeção agressiva no código fonte do kernel..."
+    # --- ROTA 3: SPOOF COM VERSÃO EXATA DA SAMSUNG ---
+    echo "Aplicando injeção da versão exata no código fonte do kernel..."
     
-    # Em vez de brigar com os arquivos temporários, nós reescrevemos o código em C 
-    # que manda a informação para o Android (o cérebro do uname), substituindo 
-    # a macro UTS_RELEASE pela nossa string fixa do GKI (6.12.38).
-    
-    sed -i 's/UTS_RELEASE/"6.12.38-🩸LK_LittleKernel+"/g' init/version.c
+    # Substitui a macro UTS_RELEASE pela string exata pedida, sem emojis ou nomes extras
+    sed -i 's/UTS_RELEASE/"5.10.237-android12-8-00021-g6f2f96be86b9-abT500XXS8CXG3"/g' init/version.c
     
     # --------------------------------------------------------
 
@@ -80,10 +77,10 @@ fi
 
     # --- NOVO: Personalizando o nome no AnyKernel ---
     echo "Personalizando o nome do Kernel..."
-    sed -i 's/kernel.string=.*/kernel.string=🩸 LK_LittleKernel (Android 16 GKI spoof) by jessijs/g' anykernel.sh
+    sed -i 's/kernel.string=.*/kernel.string=Linux 5.10.237-android12 gta4l by jessijs/g' anykernel.sh
     # ------------------------------------------------
 
-    ZIP_FILENAME=LK_LittleKernel_GKI16_gta4l_$(date +'%Y%m%d_%H%M%S')_${GIT_COMMIT_ID}.zip
+    ZIP_FILENAME=gta4l_kernel_5.10.237_$(date +'%Y%m%d_%H%M%S')_${GIT_COMMIT_ID}.zip
     zip -r9 $ZIP_FILENAME ./* -x .git .gitignore out/ ./*.zip
     mv $ZIP_FILENAME ../
     cd ..
